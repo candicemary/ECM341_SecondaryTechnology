@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cyber Safety Decision Lab: Spot the Phish</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #d9e2f1;
+      --text: #1d2736;
+      --muted: #5d6b82;
+      --accent: hsl(209, 79%, 36%);
+      --accent-soft: #e797bc;
+      --success: #b2e690;
+      --success-soft: #e9f8ef;
+      --warning: #8f5b00;
+      --warning-soft: #fff4db;
+      --danger: #a12626;
+      --danger-soft: #ffe9e9;
+      --shadow: 0 12px 28px rgba(42, 91, 171, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 920px;
+    }
+
+    .instruction-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .instruction-card {
+      background: #dae5eb;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .instruction-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .status-pill {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+      min-height: 100%;
+    }
+
+    .panel h2 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .scenario-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fbfcff;
+      margin-top: 12px;
+    }
+
+    .scenario-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #93b4e1;
+    }
+
+    .scenario-row:last-child { border-bottom: none; }
+
+    .scenario-row .label {
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    fieldset {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px 10px;
+      margin: 0;
+      background: #fbfcff;
+    }
+
+    legend {
+      padding: 0 8px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e4eaf4;
+      background: #fff;
+    }
+
+    .check-item input {
+      margin-top: 3px;
+      transform: scale(1.15);
+    }
+
+    .button-row,
+    .action-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .action-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(33, 87, 201, 0.25);
+    }
+
+    .secondary {
+      background: #eef3fb;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .action-btn {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+      text-align: left;
+      min-height: 64px;
+    }
+
+    .action-btn.selected {
+      outline: 3px solid rgba(33, 87, 201, 0.18);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .logic-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fbfcff;
+      margin-bottom: 12px;
+    }
+
+    .logic-label {
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .logic-value {
+      font-weight: 700;
+    }
+
+    .output-neutral {
+      color: var(--muted);
+    }
+
+    .feedback-box,
+    .feature-feedback,
+    .note-box {
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .feature-feedback {
+      background: #f7faff;
+      border: 1px solid var(--line);
+    }
+
+    .feedback-box.safe,
+    .note-box.safe {
+      background: var(--success-soft);
+      border: 1px solid #bee5cb;
+    }
+
+    .feedback-box.unsafe,
+    .note-box.unsafe {
+      background: var(--danger-soft);
+      border: 1px solid #efb6b6;
+    }
+
+    .feedback-box.partly,
+    .note-box.partly {
+      background: var(--warning-soft);
+      border: 1px solid #efd28b;
+    }
+
+    .feedback-box.best,
+    .note-box.best {
+      background: var(--success-soft);
+      border: 1px solid #bee5cb;
+    }
+
+    .summary {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .summary ul {
+      padding-left: 22px;
+    }
+
+    .summary strong {
+      color: var(--accent);
+    }
+
+    .small {
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero" aria-labelledby="title">
+      <div class="eyebrow">Year 8 Digital Technologies</div>
+      <h1 id="title">Cyber Safety Decision Lab: Spot the Phish</h1>
+      <p class="subtitle">
+        You are a Year 8 student checking messages on a school device. In each scene, identify the suspicious features, apply the rule, and choose the safest action. This activity makes the computational thinking structure visible: <strong>Input → Rule → Output</strong>.
+      </p>
+
+      <div class="instruction-grid" aria-label="Instructions">
+        <div class="instruction-card"><strong>Step 1</strong>Tick the suspicious features you notice.</div>
+        <div class="instruction-card"><strong>Step 2</strong>Read the matching IF/THEN rule.</div>
+        <div class="instruction-card"><strong>Step 3</strong>Choose the safest action for the scenario.</div>
+        <div class="instruction-card"><strong>Step 4</strong>Study the output and explanation before moving on.</div>
+      </div>
+    </section>
+
+    <div class="status-bar" aria-label="Progress and score">
+      <div class="status-pill" id="progressPill">Scene 1 of 3</div>
+      <div class="status-pill" id="scorePill">Best choices: 0</div>
+    </div>
+
+    <main id="activityArea">
+      <div class="grid">
+        <section class="panel" aria-labelledby="scenarioHeading">
+          <div class="eyebrow" id="sceneTag">Scene 1</div>
+          <h2 id="scenarioHeading">Scenario</h2>
+          <p id="scenePrompt"></p>
+          <div class="scenario-card" id="scenarioCard" aria-label="Scenario details"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="featureHeading">
+          <div class="eyebrow">Step 1</div>
+          <h2 id="featureHeading">Which features are suspicious?</h2>
+          <fieldset>
+            <legend>Select the warning signs</legend>
+            <div class="checklist" id="featureList"></div>
+          </fieldset>
+          <div class="button-row">
+            <button class="primary" id="confirmFeaturesBtn">Confirm features</button>
+            <button class="secondary" id="clearFeaturesBtn">Clear selections</button>
+          </div>
+          <div class="feature-feedback" id="featureFeedback" aria-live="polite">
+            Choose the suspicious features first. This builds the <strong>input</strong> for the rule.
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="logicHeading">
+          <div class="eyebrow">Step 2 → Step 4</div>
+          <h2 id="logicHeading">Input → Rule → Output</h2>
+
+          <div class="logic-box">
+            <div class="logic-label">Input</div>
+            <div class="logic-value" id="inputText">Select suspicious features to build the input.</div>
+          </div>
+
+          <div class="logic-box">
+            <div class="logic-label">Rule</div>
+            <div class="logic-value" id="ruleText">Confirm your feature choices to reveal the scene rule.</div>
+          </div>
+
+          <div class="logic-box">
+            <div class="logic-label">Output</div>
+            <div class="logic-value output-neutral" id="outputText">No output yet. Choose an action after confirming the rule.</div>
+          </div>
+
+          <div class="note-box safe" id="teachingNote" style="display:none;"></div>
+        </section>
+      </div>
+
+      <section class="panel" style="margin-top: 18px;" aria-labelledby="actionHeading">
+        <div class="eyebrow">Step 3</div>
+        <h2 id="actionHeading">Based on these features, what should you do?</h2>
+        <p class="small">Action choices stay locked until you confirm the suspicious features.</p>
+        <div class="action-grid" id="actionGrid"></div>
+        <div class="button-row">
+          <button class="primary" id="submitActionBtn" disabled>Submit action</button>
+          <button class="secondary" id="nextSceneBtn" disabled>Next scene</button>
+          <button class="secondary" id="restartBtn">Restart activity</button>
+        </div>
+
+        <div class="feedback-box" id="feedbackBox" aria-live="polite">
+          Your scene feedback will appear here after you submit an action.
+        </div>
+      </section>
+
+      <section class="panel summary" id="summaryPanel" aria-labelledby="summaryHeading">
+        <div class="eyebrow">Finished</div>
+        <h2 id="summaryHeading">What did the algorithm teach?</h2>
+        <p id="summaryText"></p>
+        <ul>
+          <li><strong>Input:</strong> message features such as urgency, unknown senders, suspicious links, unexpected login requests, and unusual URLs.</li>
+          <li><strong>Rule:</strong> IF suspicious features are present, THEN avoid clicking, verify through a trusted channel, or report phishing.</li>
+          <li><strong>Output:</strong> safer decisions and clearer reasoning across different cyber security contexts.</li>
+        </ul>
+        <button class="primary" id="summaryRestartBtn">Play again</button>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const scenes = [
+      {
+        tag: 'Scene 1',
+        title: 'Obvious phishing email',
+        prompt: 'A message arrives while you are checking your school inbox during class.',
+        details: [
+          { label: 'Sender', value: 'support-school-alerts@verify-now-mail.com' },
+          { label: 'Subject', value: 'Urgent: Your school account will be locked today' },
+          { label: 'Message', value: 'Click immediately to keep access to your school account.' },
+          { label: 'Link', value: 'verify-school-login-now.com/reset' }
+        ],
+        features: [
+          'Urgent language',
+          'Unknown sender',
+          'Suspicious link',
+          'Official logo'
+        ],
+        suspicious: ['Urgent language', 'Unknown sender', 'Suspicious link'],
+        rule: 'IF a message creates pressure and includes an unknown or suspicious link, THEN classify it as phishing.',
+        actions: [
+          {
+            label: 'Click the link',
+            outcome: 'unsafe',
+            feedback: 'Unsafe. The message uses pressure and a risky link to rush the user. Clicking could expose login details.',
+            note: 'Consequence: an attacker could capture your credentials.'
+          },
+          {
+            label: 'Ignore the message',
+            outcome: 'safe',
+            feedback: 'Safe, but not the strongest response. Ignoring avoids direct harm, but it does not help protect other users.',
+            note: 'Safer action: report suspicious messages when possible.'
+          },
+          {
+            label: 'Report phishing',
+            outcome: 'best',
+            feedback: 'Best choice. The message contains multiple phishing signs and reporting it helps protect the school community.',
+            note: 'System rule: IF urgency + unknown sender + suspicious link → THEN phishing.'
+          }
+        ]
+      },
+      {
+        tag: 'Scene 2',
+        title: 'Realistic school-style phishing',
+        prompt: 'This message looks more convincing because it imitates a school notice.',
+        details: [
+          { label: 'Sender', value: 'noreply@northview-school.net' },
+          { label: 'Subject', value: 'Assessment portal update – sign in again' },
+          { label: 'Message', value: 'Please sign in to view your updated timetable and assessment notifications.' },
+          { label: 'Visual cue', value: 'Uses a copied school-style banner and logo' }
+        ],
+        features: [
+          'Uses school logo',
+          'Requests login again',
+          'Sender looks almost correct',
+          'Message sounds official'
+        ],
+        suspicious: ['Requests login again', 'Sender looks almost correct'],
+        rule: 'IF a message looks official but asks for unexpected login details, THEN verify through a trusted channel before acting.',
+        actions: [
+          {
+            label: 'Log in immediately',
+            outcome: 'unsafe',
+            feedback: 'Unsafe. A message can look official and still be phishing. Logging in through an unverified message can expose your account.',
+            note: 'Misconception check: official-looking design does not guarantee that a message is real.'
+          },
+          {
+            label: 'Delete it',
+            outcome: 'partly',
+            feedback: 'Partly safe. Deleting avoids direct harm, but checking through the official school portal or reporting the message is stronger.',
+            note: 'Even though the message looks official, phishing often imitates trusted organisations.'
+          },
+          {
+            label: 'Check through the official school portal',
+            outcome: 'best',
+            feedback: 'Best choice. This verifies the message through a trusted source instead of trusting the message itself.',
+            note: 'System rule: IF a message appears official but asks for unexpected login details → THEN verify before acting.'
+          },
+          {
+            label: 'Report phishing',
+            outcome: 'best',
+            feedback: 'Best choice. The message imitates a trusted organisation and requests login details, so reporting it is appropriate.',
+            note: 'Misconception check: phishing often copies trusted brands, logos, and school language.'
+          }
+        ]
+      },
+      {
+        tag: 'Scene 3',
+        title: 'Fake login page',
+        prompt: 'After following a message link, you land on a page that looks familiar.',
+        details: [
+          { label: 'Page title', value: 'School Sign-In' },
+          { label: 'URL', value: 'school-portal-secure-login.ru/account' },
+          { label: 'Page look', value: 'Colours and layout look similar to the real portal' },
+          { label: 'Request', value: 'Enter username and password to continue' }
+        ],
+        features: [
+          'Strange URL',
+          'Familiar design',
+          'Login request',
+          'Opened from a message link'
+        ],
+        suspicious: ['Strange URL', 'Login request', 'Opened from a message link'],
+        rule: 'IF a page requests credentials after following a suspicious path or shows an unusual URL, THEN do not enter details.',
+        actions: [
+          {
+            label: 'Enter username and password',
+            outcome: 'unsafe',
+            feedback: 'Unsafe. Fake login pages often copy familiar design but use unusual URLs to trick users into entering details.',
+            note: 'Consequence: credentials could be stolen through a phishing website.'
+          },
+          {
+            label: 'Close the page',
+            outcome: 'safe',
+            feedback: 'Safe. Closing the page prevents direct exposure, although reporting it would be even better.',
+            note: 'This applies the same rule as email phishing, but in a website context.'
+          },
+          {
+            label: 'Check the URL and report it',
+            outcome: 'best',
+            feedback: 'Best choice. Checking the URL identifies the fake site and reporting it helps stop further harm.',
+            note: 'Cross-context note: this applies the same phishing rule as email messages, but in a website context.'
+          },
+          {
+            label: 'Refresh and try again',
+            outcome: 'partly',
+            feedback: 'Partly safe. Refreshing does not solve the core issue because the URL and path are still suspicious.',
+            note: 'System rule: IF the URL is unusual or the page follows an untrusted link → THEN do not enter credentials.'
+          }
+        ]
+      }
+    ];
+
+    const progressPill = document.getElementById('progressPill');
+    const scorePill = document.getElementById('scorePill');
+    const sceneTag = document.getElementById('sceneTag');
+    const scenarioHeading = document.getElementById('scenarioHeading');
+    const scenePrompt = document.getElementById('scenePrompt');
+    const scenarioCard = document.getElementById('scenarioCard');
+    const featureList = document.getElementById('featureList');
+    const featureFeedback = document.getElementById('featureFeedback');
+    const inputText = document.getElementById('inputText');
+    const ruleText = document.getElementById('ruleText');
+    const outputText = document.getElementById('outputText');
+    const teachingNote = document.getElementById('teachingNote');
+    const actionGrid = document.getElementById('actionGrid');
+    const feedbackBox = document.getElementById('feedbackBox');
+    const confirmFeaturesBtn = document.getElementById('confirmFeaturesBtn');
+    const clearFeaturesBtn = document.getElementById('clearFeaturesBtn');
+    const submitActionBtn = document.getElementById('submitActionBtn');
+    const nextSceneBtn = document.getElementById('nextSceneBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const summaryPanel = document.getElementById('summaryPanel');
+    const summaryText = document.getElementById('summaryText');
+    const summaryRestartBtn = document.getElementById('summaryRestartBtn');
+    const activityArea = document.getElementById('activityArea');
+
+    let currentSceneIndex = 0;
+    let selectedAction = '';
+    let featuresConfirmed = false;
+    let bestCount = 0;
+    let safeCount = 0;
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function loadScene(index) {
+      const scene = scenes[index];
+      currentSceneIndex = index;
+      selectedAction = '';
+      featuresConfirmed = false;
+
+      progressPill.textContent = `Scene ${index + 1} of ${scenes.length}`;
+      scorePill.textContent = `Best choices: ${bestCount}`;
+      sceneTag.textContent = scene.tag;
+      scenarioHeading.textContent = scene.title;
+      scenePrompt.textContent = scene.prompt;
+
+      scenarioCard.innerHTML = scene.details.map(item => `
+        <div class="scenario-row">
+          <div class="label">${escapeHtml(item.label)}</div>
+          <div>${escapeHtml(item.value)}</div>
+        </div>
+      `).join('');
+
+      featureList.innerHTML = scene.features.map((feature, idx) => `
+        <label class="check-item" for="feature-${idx}">
+          <input type="checkbox" id="feature-${idx}" value="${escapeHtml(feature)}" />
+          <span>${escapeHtml(feature)}</span>
+        </label>
+      `).join('');
+
+      featureFeedback.innerHTML = 'Choose the suspicious features first. This builds the <strong>input</strong> for the rule.';
+      inputText.textContent = 'Select suspicious features to build the input.';
+      ruleText.textContent = 'Confirm your feature choices to reveal the scene rule.';
+      outputText.textContent = 'No output yet. Choose an action after confirming the rule.';
+      outputText.className = 'logic-value output-neutral';
+      teachingNote.style.display = 'none';
+      teachingNote.textContent = '';
+      teachingNote.className = 'note-box safe';
+
+      actionGrid.innerHTML = scene.actions.map(action => `
+        <button class="action-btn" type="button" data-action="${escapeHtml(action.label)}" disabled>
+          ${escapeHtml(action.label)}
+        </button>
+      `).join('');
+
+      feedbackBox.className = 'feedback-box';
+      feedbackBox.innerHTML = 'Your scene feedback will appear here after you submit an action.';
+
+      submitActionBtn.disabled = true;
+      nextSceneBtn.disabled = true;
+
+      attachActionHandlers();
+    }
+
+    function getSelectedFeatures() {
+      return Array.from(featureList.querySelectorAll('input:checked')).map(input => input.value);
+    }
+
+    function compareFeatures(selected, correct) {
+      const selectedSet = new Set(selected);
+      const correctSet = new Set(correct);
+      const hits = correct.filter(item => selectedSet.has(item));
+      const missed = correct.filter(item => !selectedSet.has(item));
+      const extras = selected.filter(item => !correctSet.has(item));
+      return { hits, missed, extras };
+    }
+
+    function confirmFeatures() {
+      const scene = scenes[currentSceneIndex];
+      const selected = getSelectedFeatures();
+      if (selected.length === 0) {
+        featureFeedback.innerHTML = 'Select at least one feature so the system can build the <strong>input</strong>.';
+        return;
+      }
+
+      const { hits, missed, extras } = compareFeatures(selected, scene.suspicious);
+      const inputString = selected.join(' + ');
+      inputText.textContent = inputString;
+      ruleText.textContent = scene.rule;
+      featuresConfirmed = true;
+      submitActionBtn.disabled = false;
+      actionGrid.querySelectorAll('button').forEach(button => { button.disabled = false; });
+
+      let message = '';
+      if (missed.length === 0 && extras.length === 0) {
+        message = `Strong identification. You found all of the key suspicious features: <strong>${scene.suspicious.join(', ')}</strong>.`;
+      } else {
+        message = `You spotted <strong>${hits.length}</strong> key warning sign(s). `;
+        if (missed.length > 0) {
+          message += `Missed feature(s): <strong>${missed.join(', ')}</strong>. `;
+        }
+        if (extras.length > 0) {
+          message += `Feature(s) that are not strong warning signs in this scene: <strong>${extras.join(', ')}</strong>. `;
+        }
+        message += 'Now apply the rule before choosing an action.';
+      }
+      featureFeedback.innerHTML = message;
+      outputText.textContent = 'Input confirmed. Select an action to generate the output.';
+      outputText.className = 'logic-value output-neutral';
+    }
+
+    function clearFeatures() {
+      featureList.querySelectorAll('input').forEach(input => { input.checked = false; });
+      featuresConfirmed = false;
+      selectedAction = '';
+      featureFeedback.innerHTML = 'Selections cleared. Rebuild the <strong>input</strong> by identifying the suspicious features.';
+      inputText.textContent = 'Select suspicious features to build the input.';
+      ruleText.textContent = 'Confirm your feature choices to reveal the scene rule.';
+      outputText.textContent = 'No output yet. Choose an action after confirming the rule.';
+      outputText.className = 'logic-value output-neutral';
+      submitActionBtn.disabled = true;
+      actionGrid.querySelectorAll('button').forEach(button => {
+        button.disabled = true;
+        button.classList.remove('selected');
+      });
+      feedbackBox.className = 'feedback-box';
+      feedbackBox.innerHTML = 'Your scene feedback will appear here after you submit an action.';
+      nextSceneBtn.disabled = true;
+      teachingNote.style.display = 'none';
+      teachingNote.textContent = '';
+      teachingNote.className = 'note-box safe';
+    }
+
+    function attachActionHandlers() {
+      actionGrid.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          if (!featuresConfirmed) return;
+          selectedAction = button.dataset.action;
+          actionGrid.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+          button.classList.add('selected');
+        });
+      });
+    }
+
+    function submitAction() {
+      const scene = scenes[currentSceneIndex];
+      if (!featuresConfirmed) {
+        feedbackBox.className = 'feedback-box partly';
+        feedbackBox.textContent = 'Confirm the suspicious features first so the action is based on the rule.';
+        return;
+      }
+      if (!selectedAction) {
+        feedbackBox.className = 'feedback-box partly';
+        feedbackBox.textContent = 'Choose an action before submitting.';
+        return;
+      }
+
+      const action = scene.actions.find(item => item.label === selectedAction);
+      if (!action) return;
+
+      feedbackBox.className = `feedback-box ${action.outcome}`;
+      feedbackBox.innerHTML = `<strong>${action.outcome === 'best' ? 'Best choice' : action.outcome === 'safe' ? 'Safe choice' : action.outcome === 'partly' ? 'Partly safe choice' : 'Unsafe choice'}.</strong> ${action.feedback}`;
+
+      outputText.textContent = `${action.outcome === 'best' ? 'Best choice' : action.outcome === 'safe' ? 'Safe' : action.outcome === 'partly' ? 'Partly safe' : 'Unsafe'}`;
+      outputText.className = 'logic-value';
+
+      teachingNote.style.display = 'block';
+      teachingNote.className = `note-box ${action.outcome}`;
+      teachingNote.innerHTML = action.note;
+
+      if (action.outcome === 'best') bestCount += 1;
+      if (action.outcome === 'best' || action.outcome === 'safe') safeCount += 1;
+      scorePill.textContent = `Best choices: ${bestCount}`;
+
+      submitActionBtn.disabled = true;
+      actionGrid.querySelectorAll('button').forEach(button => { button.disabled = true; });
+      nextSceneBtn.disabled = false;
+    }
+
+    function nextScene() {
+      if (currentSceneIndex < scenes.length - 1) {
+        loadScene(currentSceneIndex + 1);
+      } else {
+        showSummary();
+      }
+    }
+
+    function showSummary() {
+      document.querySelectorAll('.grid, #actionHeading, #actionGrid, #submitActionBtn, #nextSceneBtn, #restartBtn, #feedbackBox, .panel .small, .button-row, .eyebrow').forEach(() => {});
+      summaryText.innerHTML = `You completed all <strong>${scenes.length}</strong> scenes and made <strong>${bestCount}</strong> best-choice decision(s). Across the activity, the same conditional thinking pattern appeared in different contexts: suspicious features became the input, an IF/THEN rule classified the risk, and your chosen action produced a safer or less safe output.`;
+      summaryPanel.style.display = 'block';
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function restartActivity() {
+      bestCount = 0;
+      safeCount = 0;
+      summaryPanel.style.display = 'none';
+      loadScene(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    confirmFeaturesBtn.addEventListener('click', confirmFeatures);
+    clearFeaturesBtn.addEventListener('click', clearFeatures);
+    submitActionBtn.addEventListener('click', submitAction);
+    nextSceneBtn.addEventListener('click', nextScene);
+    restartBtn.addEventListener('click', restartActivity);
+    summaryRestartBtn.addEventListener('click', restartActivity);
+
+    loadScene(0);
+  </script>
+</body>
+</html>
